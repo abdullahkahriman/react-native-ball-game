@@ -1,21 +1,158 @@
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { Component } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  TouchableOpacity,
+} from "react-native";
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+const { width, height } = Dimensions.get("window");
+
+class App extends Component {
+  constructor(props) {
+    super(props);
+    this.state = this.getInitState();
+    this.timer = 0;
+  }
+
+  getInitState = () => {
+    return {
+      bottom: height / 2 - 50,
+      left: width / 2 - 50,
+      score: 0,
+      gameOver: false,
+    };
+  }
+
+  componentDidMount = () => {
+    this.timer = setInterval(() => {
+      this.interval();
+    }, 20);
+  };
+
+  interval = () => {
+    if (this.state.bottom > 0) {
+      if (this.state.bottom > height) {
+        this.setState({
+          bottom: height - 100,
+        });
+      } else {
+        this.setState({
+          bottom: this.state.bottom - 5,
+        });
+      }
+    } else {
+      this.gameOver();
+    }
+  };
+
+  gameOver = () => {
+    clearInterval(this.timer);
+    this.setState({
+      gameOver: true,
+    });
+  };
+
+  upBall = () => {
+    if (!this.state.gameOver) {
+      const random = Math.floor(Math.random() * (width - 200)) + 100;
+      this.setState({
+        score: this.state.score + 1,
+        bottom: this.state.bottom + 100,
+        left: random,
+      });
+    }
+  };
+
+  again = () => {
+    this.setState(this.getInitState());
+    this.timer = setInterval(() => {
+      this.interval();
+    }, 20);
+  };
+
+  render() {
+    return (
+      <TouchableOpacity
+        onPress={() => this.upBall()}
+        activeOpacity={1}
+        style={styles.container}
+      >
+        <View style={styles.scoreView}>
+          <Text style={styles.scoreText}>{this.state.score}</Text>
+        </View>
+        <View
+          style={[
+            styles.ball,
+            { bottom: this.state.bottom, left: this.state.left },
+          ]}
+        />
+        {this.state.gameOver && (
+          <View style={styles.gameOverView}>
+            <Text style={styles.gameOverText}>GAME OVER!</Text>
+            <TouchableOpacity
+              onPress={() => this.again()}
+              style={styles.reGame}
+            >
+              <Text style={styles.reGameText}>try again!</Text>
+            </TouchableOpacity>
+            <Text style={styles.gameOverScore}>
+              Your score is {this.state.score}
+            </Text>
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  }
 }
+export default App;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#f1f1f1",
+  },
+  ball: {
+    width: 100,
+    height: 100,
+    backgroundColor: "red",
+    borderRadius: 50,
+    position: "absolute",
+  },
+  scoreView: {
+    marginTop: 50,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  scoreText: {
+    fontSize: 50,
+  },
+  gameOverView: {
+    position: "absolute",
+    left: 0,
+    width: width,
+    height: height,
+    backgroundColor: "#000",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  gameOverText: {
+    fontSize: 30,
+    color: "#fff",
+  },
+  reGame: {
+    padding: 15,
+    backgroundColor: "#fff",
+    paddingVertical: 10,
+    marginVertical: 10,
+    borderRadius: 25,
+  },
+  reGameText: {
+    fontSize: 20,
+  },
+  gameOverScore: {
+    color: "#fff",
   },
 });
